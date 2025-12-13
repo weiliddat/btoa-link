@@ -10,8 +10,5 @@
   },
   "devDependencies": {
     "vite": "^7.2.4"
-  },
-  "dependencies": {
-    "brotli-wasm": "^3.0.1"
   }
 }

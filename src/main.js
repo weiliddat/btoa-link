@@ -1,7 +1,30 @@
 import "./normalize.css";
 import "./style.css";
 
-import brotliPromise from "brotli-wasm?init"; // Import the default export
+let brotliModule = null;
+async function getBrotli() {
+  if (brotliModule) return brotliModule;
+  const brotli =
+    await import("https://unpkg.com/brotli-wasm@3.0.1/index.web.js?module").then(
+      (m) => m.default,
+    );
+  brotliModule = brotli;
+  return brotliModule;
+}
+
+async function compress(data) {
+  const stream = new Blob([data])
+    .stream()
+    .pipeThrough(new CompressionStream("deflate"));
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+
+async function decompress(data) {
+  const stream = new Blob([data])
+    .stream()
+    .pipeThrough(new DecompressionStream("deflate"));
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
 
 function setLink(value) {
   document.getElementById("copy-link").value = value;
@@ -20,17 +43,28 @@ document.getElementById("encode").addEventListener("click", () => {
 
 // Compress handler
 document.getElementById("compress").addEventListener("click", async () => {
-  const brotli = await brotliPromise; // Import is async in browsers due to wasm requirements!
-  const textEncoder = new TextEncoder();
-
   const input = document.getElementById("code").value;
-  const uncompressedData = textEncoder.encode(input);
-  const compressedData = brotli.compress(uncompressedData);
+  const uncompressedData = new TextEncoder().encode(input);
+  const compressedData = await compress(uncompressedData);
 
   const compressedPath = compressedData.toBase64({ alphabet: "base64url" });
   const origin = new URL(window.location.origin);
-  setLink(origin + "br/" + compressedPath);
+  setLink(origin + "lz/" + compressedPath);
 });
+
+// Compress Brotli handler
+document
+  .getElementById("compress-brotli")
+  .addEventListener("click", async () => {
+    const brotli = await getBrotli();
+    const input = document.getElementById("code").value;
+    const uncompressedData = new TextEncoder().encode(input);
+    const compressedData = brotli.compress(uncompressedData);
+
+    const compressedPath = compressedData.toBase64({ alphabet: "base64url" });
+    const origin = new URL(window.location.origin);
+    setLink(origin + "br/" + compressedPath);
+  });
 
 // Code area handler
 // On any input change reset copy-link
@@ -67,8 +101,15 @@ window.addEventListener("load", async () => {
     });
     const decoded = new TextDecoder().decode(intarray);
     document.getElementById("code").value = decoded;
+  } else if (url.pathname.startsWith("/lz/")) {
+    const intarray = Uint8Array.fromBase64(encoded, {
+      alphabet: "base64url",
+    });
+    const decompressedData = await decompress(intarray);
+    const decoded = new TextDecoder().decode(decompressedData);
+    document.getElementById("code").value = decoded;
   } else if (url.pathname.startsWith("/br/")) {
-    const brotli = await brotliPromise; // Import is async in browsers due to wasm requirements!
+    const brotli = await getBrotli();
     const intarray = Uint8Array.fromBase64(encoded, {
       alphabet: "base64url",
     });

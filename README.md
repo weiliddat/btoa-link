@@ -1,6 +1,6 @@
 # btoa.link
 
-[btoa.link](https://btoa.link) is a simple text sharing tool that allows you to share text snippets with others without the need for a server.
+[btoa.link](https://btoa.link) is a simple way to share text snippets without having to save/share it to a server. Everything is encoded in the URL you share.
 
 Currently supports encoding the text to:
 

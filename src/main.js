@@ -80,6 +80,7 @@ document.getElementById("code").addEventListener("input", () => {
 // Copy to clipboard button handler
 document.getElementById("copy-clipboard").addEventListener("click", () => {
   const copyText = document.getElementById("copy-link").value;
+  if (!copyText) return;
 
   if (navigator.clipboard) {
     const type = "text/plain";

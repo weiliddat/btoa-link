@@ -31,6 +31,11 @@ function setLink(value) {
   document.getElementById("link-length").textContent = value.length;
 }
 
+function setCode(value) {
+  document.getElementById("code").value = value;
+  document.getElementById("code-length").textContent = value.length;
+}
+
 // Encode button handler
 document.getElementById("encode-b64").addEventListener("click", () => {
   const code = document.getElementById("code").value;
@@ -53,18 +58,16 @@ document.getElementById("encode-zlib").addEventListener("click", async () => {
 });
 
 // Compress Brotli handler
-document
-  .getElementById("encode-brotli")
-  .addEventListener("click", async () => {
-    const brotli = await getBrotli();
-    const input = document.getElementById("code").value;
-    const uncompressedData = new TextEncoder().encode(input);
-    const compressedData = brotli.compress(uncompressedData);
+document.getElementById("encode-brotli").addEventListener("click", async () => {
+  const brotli = await getBrotli();
+  const input = document.getElementById("code").value;
+  const uncompressedData = new TextEncoder().encode(input);
+  const compressedData = brotli.compress(uncompressedData);
 
-    const compressedPath = compressedData.toBase64({ alphabet: "base64url" });
-    const origin = new URL(window.location.origin);
-    setLink(origin + "br/" + compressedPath);
-  });
+  const compressedPath = compressedData.toBase64({ alphabet: "base64url" });
+  const origin = new URL(window.location.origin);
+  setLink(origin + "br/" + compressedPath);
+});
 
 // Code area handler
 // On any input change reset copy-link
@@ -100,14 +103,14 @@ window.addEventListener("load", async () => {
       alphabet: "base64url",
     });
     const decoded = new TextDecoder().decode(intarray);
-    document.getElementById("code").value = decoded;
+    setCode(decoded);
   } else if (url.pathname.startsWith("/lz/")) {
     const intarray = Uint8Array.fromBase64(encoded, {
       alphabet: "base64url",
     });
     const decompressedData = await decompress(intarray);
     const decoded = new TextDecoder().decode(decompressedData);
-    document.getElementById("code").value = decoded;
+    setCode(decoded);
   } else if (url.pathname.startsWith("/br/")) {
     const brotli = await getBrotli();
     const intarray = Uint8Array.fromBase64(encoded, {
@@ -115,6 +118,6 @@ window.addEventListener("load", async () => {
     });
     const decompressedData = brotli.decompress(intarray);
     const decoded = new TextDecoder().decode(decompressedData);
-    document.getElementById("code").value = decoded;
+    setCode(decoded);
   }
 });

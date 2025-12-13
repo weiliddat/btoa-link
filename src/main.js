@@ -32,7 +32,7 @@ function setLink(value) {
 }
 
 // Encode button handler
-document.getElementById("encode").addEventListener("click", () => {
+document.getElementById("encode-b64").addEventListener("click", () => {
   const code = document.getElementById("code").value;
   const intarray = new TextEncoder().encode(code);
   const encoded = intarray.toBase64({ alphabet: "base64url" });
@@ -42,7 +42,7 @@ document.getElementById("encode").addEventListener("click", () => {
 });
 
 // Compress handler
-document.getElementById("compress").addEventListener("click", async () => {
+document.getElementById("encode-zlib").addEventListener("click", async () => {
   const input = document.getElementById("code").value;
   const uncompressedData = new TextEncoder().encode(input);
   const compressedData = await compress(uncompressedData);
@@ -54,7 +54,7 @@ document.getElementById("compress").addEventListener("click", async () => {
 
 // Compress Brotli handler
 document
-  .getElementById("compress-brotli")
+  .getElementById("encode-brotli")
   .addEventListener("click", async () => {
     const brotli = await getBrotli();
     const input = document.getElementById("code").value;

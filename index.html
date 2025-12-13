@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22&gt;&lt;text y=%22.9em%22 font-size=%2290%22&gt;🔡&lt;/text&gt;&lt;/svg&gt;">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>btoa</title>
+  </head>
+  <body>
+    <main id="main">
+      <nav id="nav">
+        <button id="encode">Encode</button>
+        <button id="compress">Compress</button>
+        <input type="text" id="copy-link" value="" readonly>
+        <span id="link-length">0</span>
+        <button id="copy-clipboard">Copy to Clipboard</button>
+      </nav>
+
+      <textarea name="code" id="code"></textarea>
+
+      <section id="metadata">
+        <span id="code-length"></span>
+      </section>
+    </main>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,26 @@
+#main {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 4px;
+    gap: 4px;
+}
+
+#nav, #metadata {
+    display: flex;
+    justify-content: end;
+    align-items: center;
+    gap: 4px;
+}
+
+#code {
+    width: 100%;
+    flex-grow: 1;
+    padding: 4px;
+    overflow-y: auto;
+    resize: none;
+}
+
+#copy-link {
+    flex-grow: 1;
+}

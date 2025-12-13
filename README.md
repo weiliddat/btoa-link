@@ -8,7 +8,11 @@ Currently supports encoding the text to:
 - zlib
 - brotli
 
-Plan to experiment with other compression algorithms.
+## Ideas
+
+- [ ] Other compression algorithms?
+- [ ] Code highlighting / markdown rendering?
+- [ ] Other file types e.g. images / audio?
 
 ## Requirements
 

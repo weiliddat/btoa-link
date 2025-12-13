@@ -41,12 +41,12 @@ button:active {
   gap: 6px;
 }
 
-#code {
-  width: 100%;
-  flex-grow: 1;
-  padding: 6px;
-  overflow-y: auto;
-  resize: none;
+#text {
+   width: 100%;
+   flex-grow: 1;
+   padding: 6px;
+   overflow-y: auto;
+   resize: none;
 }
 
 #copy-link {

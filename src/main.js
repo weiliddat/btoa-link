@@ -31,15 +31,15 @@ function setLink(value) {
   document.getElementById("link-length").textContent = value.length;
 }
 
-function setCode(value) {
-  document.getElementById("code").value = value;
-  document.getElementById("code-length").textContent = value.length;
+function setText(value) {
+  document.getElementById("text").value = value;
+  document.getElementById("text-length").textContent = value.length;
 }
 
 // Encode button handler
 document.getElementById("encode-b64").addEventListener("click", () => {
-  const code = document.getElementById("code").value;
-  const intarray = new TextEncoder().encode(code);
+  const text = document.getElementById("text").value;
+  const intarray = new TextEncoder().encode(text);
   const encoded = intarray.toBase64({ alphabet: "base64url" });
 
   const origin = new URL(window.location.origin);
@@ -48,7 +48,7 @@ document.getElementById("encode-b64").addEventListener("click", () => {
 
 // Compress handler
 document.getElementById("encode-zlib").addEventListener("click", async () => {
-  const input = document.getElementById("code").value;
+  const input = document.getElementById("text").value;
   const uncompressedData = new TextEncoder().encode(input);
   const compressedData = await compress(uncompressedData);
 
@@ -60,7 +60,7 @@ document.getElementById("encode-zlib").addEventListener("click", async () => {
 // Compress Brotli handler
 document.getElementById("encode-brotli").addEventListener("click", async () => {
   const brotli = await getBrotli();
-  const input = document.getElementById("code").value;
+  const input = document.getElementById("text").value;
   const uncompressedData = new TextEncoder().encode(input);
   const compressedData = brotli.compress(uncompressedData);
 
@@ -69,12 +69,12 @@ document.getElementById("encode-brotli").addEventListener("click", async () => {
   setLink(origin + "br/" + compressedPath);
 });
 
-// Code area handler
+// Text area handler
 // On any input change reset copy-link
-document.getElementById("code").addEventListener("input", () => {
+document.getElementById("text").addEventListener("input", () => {
   setLink("");
-  document.getElementById("code-length").textContent =
-    document.getElementById("code").value.length;
+  document.getElementById("text-length").textContent =
+    document.getElementById("text").value.length;
 });
 
 // Copy to clipboard button handler
@@ -104,14 +104,14 @@ window.addEventListener("load", async () => {
       alphabet: "base64url",
     });
     const decoded = new TextDecoder().decode(intarray);
-    setCode(decoded);
+    setText(decoded);
   } else if (url.pathname.startsWith("/lz/")) {
     const intarray = Uint8Array.fromBase64(encoded, {
       alphabet: "base64url",
     });
     const decompressedData = await decompress(intarray);
     const decoded = new TextDecoder().decode(decompressedData);
-    setCode(decoded);
+    setText(decoded);
   } else if (url.pathname.startsWith("/br/")) {
     const brotli = await getBrotli();
     const intarray = Uint8Array.fromBase64(encoded, {
@@ -119,13 +119,15 @@ window.addEventListener("load", async () => {
     });
     const decompressedData = brotli.decompress(intarray);
     const decoded = new TextDecoder().decode(decompressedData);
-    setCode(decoded);
+    setText(decoded);
   }
 });
 
 // Color switcher
-const colorScheme = document.querySelector('meta[name=color-scheme]');
-localStorage.getItem("theme") === "dark" ? colorScheme.content = "dark" : colorScheme.content = "light";
+const colorScheme = document.querySelector("meta[name=color-scheme]");
+localStorage.getItem("theme") === "dark"
+  ? (colorScheme.content = "dark")
+  : (colorScheme.content = "light");
 document.getElementById("theme").addEventListener("click", () => {
   if (colorScheme.content === "light") {
     colorScheme.content = "dark";

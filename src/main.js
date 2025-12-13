@@ -122,3 +122,15 @@ window.addEventListener("load", async () => {
     setCode(decoded);
   }
 });
+
+// Color switcher
+const colorScheme = document.querySelector('meta[name=color-scheme]');
+localStorage.getItem("theme") === "dark" ? colorScheme.content = "dark" : colorScheme.content = "light";
+document.getElementById("theme").addEventListener("click", () => {
+  if (colorScheme.content === "light") {
+    colorScheme.content = "dark";
+  } else {
+    colorScheme.content = "light";
+  }
+  localStorage.setItem("theme", colorScheme.content);
+});

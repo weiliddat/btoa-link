@@ -1,9 +1,5 @@
-:root {
-  color-scheme: light dark;
-}
-
 body {
-  background-color: #f9f9f9;
+  background-color: light-dark(#f9f9f9, #060606);
 }
 
 input,
@@ -12,18 +8,19 @@ textarea {
   padding: 4px 8px;
   border: 2px solid currentColor;
   border-bottom: 4px solid currentColor;
-  background-color: #eeeeee;
-  color: #444444;
+  background-color: light-dark(#eeeeee, #111111);
+  color: light-dark(#444444, #eeeeee);
   border-radius: 2px;
 }
 
 input:focus,
 button:focus,
 textarea:focus {
-  outline: 2px solid #6699ee;
+  outline: 2px solid #4466eecc;
 }
 
 button:active {
+  margin-top: 2px;
   border-bottom-width: 2px;
 }
 
@@ -36,19 +33,12 @@ button:active {
 }
 
 #nav,
-#metadata {
+#meta {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
-}
-
-#nav {
   justify-content: space-between;
-}
-
-#metadata {
-  justify-content: flex-end;
+  gap: 6px;
 }
 
 #code {

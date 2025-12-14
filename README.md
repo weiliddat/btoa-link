@@ -5,8 +5,8 @@
 Currently supports encoding the text to:
 
 - base64
-- zlib
-- brotli
+- zlib (CompressionStream)
+- brotli (currently via wasm/js; eventually CompressionStream)
 
 ## Ideas
 
@@ -23,3 +23,9 @@ Currently supports encoding the text to:
 1. Clone this repository
 2. Run `npm install`
 3. Run `npm run dev`
+
+## Notes
+
+Far from the first of its kind; haven't seen many that use good compression.
+
+From brief testing of short notes in English / code (<16kb), Brotli seems to do the best out of the box due to included dictionary. Tested zstd, brotli, zlib, bbb, bsc-m03, and some other bwt-based JS implementation I forgot :(

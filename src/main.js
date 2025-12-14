@@ -1,6 +1,8 @@
 import "./normalize.css";
 import "./style.css";
 
+import { makeBase85Codec } from "./b85.js";
+
 let brotliModule = null;
 async function getBrotli() {
   if (brotliModule) return brotliModule;
@@ -11,6 +13,11 @@ async function getBrotli() {
   brotliModule = brotli;
   return brotliModule;
 }
+
+/**
+ * @type {ReturnType<makeBase85Codec> | null}
+ */
+let b85Codec = null;
 
 async function compressDeflate(data) {
   const stream = new Blob([data])
@@ -64,7 +71,11 @@ document.getElementById("encode-brotli").addEventListener("click", async () => {
   const uncompressedData = new TextEncoder().encode(input);
   const compressedData = brotli.compress(uncompressedData);
 
-  const compressedPath = compressedData.toBase64({ alphabet: "base64url" });
+  if (!b85Codec) {
+    b85Codec = makeBase85Codec();
+  }
+
+  const compressedPath = b85Codec.encode(compressedData);
   const origin = new URL(window.location.origin);
   setLink(origin + "br/" + compressedPath);
 });
@@ -115,11 +126,15 @@ window.addEventListener("load", async () => {
   } else if (url.pathname.startsWith("/br/")) {
     const { default: decompressBrotli } =
       await import("https://esm.sh/brotli/decompress");
-    const intarray = Uint8Array.fromBase64(encoded, {
-      alphabet: "base64url",
-    });
-    const decompressedData = decompressBrotli(intarray);
-    const decoded = new TextDecoder().decode(decompressedData);
+    if (!b85Codec) {
+      b85Codec = makeBase85Codec();
+    }
+    const decoded = b85Codec.decodeText(encoded);
+    // const intarray = Uint8Array.fromBase64(encoded, {
+    //   alphabet: "base64url",
+    // });
+    // const decompressedData = decompressBrotli(intarray);
+    // const decoded = new TextDecoder().decode(decompressedData);
     setText(decoded);
   }
 });
@@ -139,4 +154,6 @@ document.getElementById("theme").addEventListener("click", () => {
 });
 
 // Log source code repo
-console.log("👋 Send feedback / checkout https://github.com/weiliddat/btoa-link/");
+console.log(
+  "👋 Send feedback / checkout https://github.com/weiliddat/btoa-link/",
+);

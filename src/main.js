@@ -12,14 +12,14 @@ async function getBrotli() {
   return brotliModule;
 }
 
-async function compress(data) {
+async function compressDeflate(data) {
   const stream = new Blob([data])
     .stream()
     .pipeThrough(new CompressionStream("deflate"));
   return new Uint8Array(await new Response(stream).arrayBuffer());
 }
 
-async function decompress(data) {
+async function decompressDeflate(data) {
   const stream = new Blob([data])
     .stream()
     .pipeThrough(new DecompressionStream("deflate"));
@@ -50,7 +50,7 @@ document.getElementById("encode-b64").addEventListener("click", () => {
 document.getElementById("encode-zlib").addEventListener("click", async () => {
   const input = document.getElementById("text").value;
   const uncompressedData = new TextEncoder().encode(input);
-  const compressedData = await compress(uncompressedData);
+  const compressedData = await compressDeflate(uncompressedData);
 
   const compressedPath = compressedData.toBase64({ alphabet: "base64url" });
   const origin = new URL(window.location.origin);
@@ -109,15 +109,16 @@ window.addEventListener("load", async () => {
     const intarray = Uint8Array.fromBase64(encoded, {
       alphabet: "base64url",
     });
-    const decompressedData = await decompress(intarray);
+    const decompressedData = await decompressDeflate(intarray);
     const decoded = new TextDecoder().decode(decompressedData);
     setText(decoded);
   } else if (url.pathname.startsWith("/br/")) {
-    const brotli = await getBrotli();
+    const { default: decompressBrotli } =
+      await import("https://esm.sh/brotli/decompress");
     const intarray = Uint8Array.fromBase64(encoded, {
       alphabet: "base64url",
     });
-    const decompressedData = brotli.decompress(intarray);
+    const decompressedData = decompressBrotli(intarray);
     const decoded = new TextDecoder().decode(decompressedData);
     setText(decoded);
   }
@@ -136,3 +137,6 @@ document.getElementById("theme").addEventListener("click", () => {
   }
   localStorage.setItem("theme", colorScheme.content);
 });
+
+// Log source code repo
+console.log("👋 Send feedback / checkout https://github.com/weiliddat/btoa-link/");

@@ -5,19 +5,23 @@ import { makeBase85Codec } from "./b85.js";
 
 let brotliModule = null;
 async function getBrotli() {
-  if (brotliModule) return brotliModule;
-  const brotli =
-    await import("https://unpkg.com/brotli-wasm@3.0.1/index.web.js?module").then(
-      (m) => m.default,
-    );
-  brotliModule = brotli;
+  if (!brotliModule) {
+    brotliModule =
+      await import("https://unpkg.com/brotli-wasm@3.0.1/index.web.js?module").then(
+        (m) => m.default,
+      );
+  }
   return brotliModule;
 }
 
-/**
- * @type {ReturnType<makeBase85Codec> | null}
- */
 let b85Codec = null;
+/**
+ * @return {ReturnType<makeBase85Codec>}
+ */
+function getB85Codec() {
+  if (!b85Codec) b85Codec = makeBase85Codec();
+  return b85Codec;
+}
 
 async function compressDeflate(data) {
   const stream = new Blob([data])
@@ -59,7 +63,7 @@ document.getElementById("encode-zlib").addEventListener("click", async () => {
   const uncompressedData = new TextEncoder().encode(input);
   const compressedData = await compressDeflate(uncompressedData);
 
-  const compressedPath = compressedData.toBase64({ alphabet: "base64url" });
+  const compressedPath = getB85Codec().encode(compressedData);
   const origin = new URL(window.location.origin);
   setLink(origin + "lz/" + compressedPath);
 });
@@ -71,11 +75,7 @@ document.getElementById("encode-brotli").addEventListener("click", async () => {
   const uncompressedData = new TextEncoder().encode(input);
   const compressedData = brotli.compress(uncompressedData);
 
-  if (!b85Codec) {
-    b85Codec = makeBase85Codec();
-  }
-
-  const compressedPath = b85Codec.encode(compressedData);
+  const compressedPath = getB85Codec().encode(compressedData);
   const origin = new URL(window.location.origin);
   setLink(origin + "br/" + compressedPath);
 });
@@ -106,8 +106,9 @@ document.getElementById("copy-clipboard").addEventListener("click", () => {
 // When first loaded, parse URL
 window.addEventListener("load", async () => {
   const url = new URL(window.location.href);
+  const path = url.href.slice(url.origin.length);
+  const encoded = path.slice(path.indexOf("/", 1) + 1);
 
-  const encoded = url.pathname.split("/")[2];
   if (!encoded) return;
 
   if (url.pathname.startsWith("/b64/")) {
@@ -117,20 +118,15 @@ window.addEventListener("load", async () => {
     const decoded = new TextDecoder().decode(intarray);
     setText(decoded);
   } else if (url.pathname.startsWith("/lz/")) {
-    const intarray = Uint8Array.fromBase64(encoded, {
-      alphabet: "base64url",
-    });
-    const decompressedData = await decompressDeflate(intarray);
+    const compressedData = getB85Codec().decode(encoded);
+    const decompressedData = await decompressDeflate(compressedData);
     const decoded = new TextDecoder().decode(decompressedData);
     setText(decoded);
   } else if (url.pathname.startsWith("/br/")) {
     const { default: decompressBrotli } =
-      await import("https://esm.sh/brotli/decompress");
-    if (!b85Codec) {
-      b85Codec = makeBase85Codec();
-    }
-    const decoded = b85Codec.decode(encoded);
-    const decompressed = decompressBrotli(decoded);
+      await import("https://esm.sh/brotli/decompress.js");
+    const compressedData = getB85Codec().decode(encoded);
+    const decompressed = decompressBrotli(compressedData);
     setText(new TextDecoder().decode(decompressed));
   }
 });

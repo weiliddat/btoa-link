@@ -6,19 +6,40 @@
       rel="icon"
       href="data:image/svg+xml,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22&gt;&lt;text y=%22.9em%22 font-size=%2290%22&gt;🔡&lt;/text&gt;&lt;/svg&gt;"
     />
-    <meta name="description" content="btoa.link - share text via URLs" />
+    <title>btoa.link - Share text via URLs</title>
+    <meta name="description" content="btoa.link - Share text via URLs" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
-    <title>btoa</title>
   </head>
   <body>
     <main id="main">
       <nav id="nav">
-        <button id="encode-text">Text</button>
-        <button id="encode-zlib">Zlib</button>
-        <button id="encode-brotli">Brotli</button>
+        <button
+          id="encode-text"
+          title="No compression, just encode as base64/85"
+        >
+          Text
+        </button>
+        <button
+          id="encode-zlib"
+          title="Compress with zlib (good compression, fast, supported by most browsers natively)"
+        >
+          Zlib
+        </button>
+        <button
+          id="encode-brotli"
+          title="Compress with brotli (high compression; needs to load in ~1MB library)"
+        >
+          Brotli
+        </button>
         ->
-        <button id="encode-mode" aria-label="Encoding mode">Base64</button>
+        <button
+          id="encode-mode"
+          aria-label="Encoding mode"
+          title="Toggle between base64 and base85 encoding for the URL. Base64 recommended. Base85 has higher efficiency but link detectors might have issues detecting it or sending without url-encoding it, but maybe worth it if you need every single bit of compression."
+        >
+          Base64
+        </button>
         ->
         <input
           type="text"
@@ -28,7 +49,7 @@
           aria-label="Generated link"
         />
         <span id="link-length">0</span>
-        <button id="copy-clipboard">Copy</button>
+        <button id="copy-clipboard" title="Copy to clipboard">Copy</button>
       </nav>
 
       <textarea
@@ -38,7 +59,13 @@
       ></textarea>
 
       <section id="meta">
-        <button id="theme" aria-label="Theme">Light</button>
+        <button id="theme" aria-label="Theme" title="Dark / light theme toggle">
+          Light
+        </button>
+        <small id="description"
+          >Free text sharing via URLs without servers, tracking, ads,
+          etc.</small
+        >
         <span id="text-length">0</span>
       </section>
     </main>

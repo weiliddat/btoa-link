@@ -5,6 +5,7 @@ body {
 input,
 button,
 textarea {
+  appearance: none;
   padding: 4px 8px;
   border: 2px solid currentColor;
   border-bottom: 4px solid currentColor;
@@ -42,11 +43,11 @@ button:active {
 }
 
 #text {
-   width: 100%;
-   flex-grow: 1;
-   padding: 6px;
-   overflow-y: auto;
-   resize: none;
+  width: 100%;
+  flex-grow: 1;
+  padding: 6px;
+  overflow-y: auto;
+  resize: none;
 }
 
 #copy-link {

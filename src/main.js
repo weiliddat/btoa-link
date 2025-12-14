@@ -47,37 +47,160 @@ function setText(value) {
   document.getElementById("text-length").textContent = value.length;
 }
 
-// Encode button handler
-document.getElementById("encode-b64").addEventListener("click", () => {
-  const text = document.getElementById("text").value;
-  const intarray = new TextEncoder().encode(text);
-  const encoded = intarray.toBase64({ alphabet: "base64url" });
+/** @type {"b64" | "b85"} */
+let encodeMode = "b64";
+function getEncodeMode() {
+  return encodeMode;
+}
 
+/**
+ * @param {"b64" | "b85"} mode
+ */
+function setEncodeMode(mode) {
+  encodeMode = mode === "b85" ? "b85" : "b64";
+  const el = document.getElementById("encode-mode");
+  if (el instanceof HTMLButtonElement) {
+    el.textContent = encodeMode === "b64" ? "Base64" : "Base85";
+  }
+}
+
+/**
+ * @param {string} href
+ * @returns {{ prefix: string, encoded: string } | null}
+ */
+function parsePrefixAndEncodedFromHref(href) {
+  try {
+    const url = new URL(href);
+    const afterOrigin = url.href.slice(url.origin.length + 1);
+    const firstSlash = afterOrigin.indexOf("/");
+    if (firstSlash === -1) return null;
+    const prefix = afterOrigin.slice(0, firstSlash);
+    const encoded = afterOrigin.slice(firstSlash + 1);
+    if (!prefix || !encoded) return null;
+    return {
+      prefix: decodeURIComponent(prefix),
+      encoded: decodeURIComponent(encoded),
+    };
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+/**
+ * @param {string} prefix
+ * @returns {"b64" | "b85" | null}
+ */
+function modeFromPrefix(prefix) {
+  if (prefix === "b64" || prefix === "lz64" || prefix === "br64") return "b64";
+  if (prefix === "b85" || prefix === "lz85" || prefix === "br85") {
+    return "b85";
+  }
+  return null;
+}
+
+/**
+ * @param {string} prefix
+ * @param {"b64" | "b85"} mode
+ * @returns {string | null}
+ */
+function prefixForMode(prefix, mode) {
+  if (prefix === "b64" || prefix === "b85") return mode;
+  if (prefix === "lz85" || prefix === "lz64") {
+    return mode === "b64" ? "lz64" : "lz85";
+  }
+  if (prefix === "br85" || prefix === "br64") {
+    return mode === "b64" ? "br64" : "br85";
+  }
+  return null;
+}
+
+document.getElementById("encode-mode").addEventListener("click", () => {
+  const nextMode = encodeMode === "b64" ? "b85" : "b64";
+  setEncodeMode(nextMode);
+
+  const existingLink = document.getElementById("copy-link").value;
+  if (!existingLink) return;
+
+  const parsed = parsePrefixAndEncodedFromHref(existingLink);
+  if (!parsed) return;
+
+  const currentLinkMode = modeFromPrefix(parsed.prefix);
+  const nextPrefix = prefixForMode(parsed.prefix, nextMode);
+  if (!currentLinkMode || !nextPrefix) return;
+
+  try {
+    const bytes = decodeBytes(parsed.encoded, currentLinkMode);
+    const encoded = encodeBytes(bytes, nextMode);
+    setLinkFromPrefix(nextPrefix, encoded);
+  } catch (error) {
+    console.error(error);
+  }
+});
+
+/**
+ * @param {Uint8Array} bytes
+ * @param {"b64" | "b85"} mode
+ */
+function encodeBytes(bytes, mode) {
+  if (mode === "b64") return bytes.toBase64({ alphabet: "base64url" });
+  return getB85Codec().encode(bytes);
+}
+
+/**
+ * @param {string} encoded
+ * @param {"b64" | "b85"} mode
+ */
+function decodeBytes(encoded, mode) {
+  if (mode === "b64") {
+    return Uint8Array.fromBase64(encoded, { alphabet: "base64url" });
+  }
+  return getB85Codec().decode(encoded);
+}
+
+/**
+ * @param {string} prefix
+ * @param {string} encoded
+ */
+function setLinkFromPrefix(prefix, encoded) {
   const origin = new URL(window.location.origin);
-  setLink(origin + "b64/" + encoded);
+  setLink(origin + prefix + "/" + encoded);
+}
+
+// Encode text handler
+document.getElementById("encode-text").addEventListener("click", () => {
+  const mode = getEncodeMode();
+  const text = document.getElementById("text").value;
+  const bytes = new TextEncoder().encode(text);
+  const encoded = encodeBytes(bytes, mode);
+  setLinkFromPrefix(mode, encoded);
 });
 
 // Compress handler
 document.getElementById("encode-zlib").addEventListener("click", async () => {
+  const mode = getEncodeMode();
   const input = document.getElementById("text").value;
   const uncompressedData = new TextEncoder().encode(input);
   const compressedData = await compressDeflate(uncompressedData);
 
-  const compressedPath = getB85Codec().encode(compressedData);
-  const origin = new URL(window.location.origin);
-  setLink(origin + "lz/" + compressedPath);
+  const compressedPath = encodeBytes(compressedData, mode);
+  setLinkFromPrefix(mode === "b64" ? "lz64" : "lz85", compressedPath);
 });
 
 // Compress Brotli handler
 document.getElementById("encode-brotli").addEventListener("click", async () => {
+  const mode = getEncodeMode();
   const brotli = await getBrotli();
   const input = document.getElementById("text").value;
   const uncompressedData = new TextEncoder().encode(input);
   const compressedData = brotli.compress(uncompressedData);
+  const compressedBytes =
+    compressedData instanceof Uint8Array
+      ? compressedData
+      : new Uint8Array(compressedData);
 
-  const compressedPath = getB85Codec().encode(compressedData);
-  const origin = new URL(window.location.origin);
-  setLink(origin + "br/" + compressedPath);
+  const compressedPath = encodeBytes(compressedBytes, mode);
+  setLinkFromPrefix(mode === "b64" ? "br64" : "br85", compressedPath);
 });
 
 // Text area handler
@@ -106,26 +229,39 @@ document.getElementById("copy-clipboard").addEventListener("click", () => {
 // When first loaded, parse URL
 window.addEventListener("load", async () => {
   const url = new URL(window.location.href);
-  const path = url.href.slice(url.origin.length);
-  const encoded = path.slice(path.indexOf("/", 1) + 1);
+  const parsed = parsePrefixAndEncodedFromHref(url);
+  if (!parsed) return;
+  const prefix = parsed.prefix;
+  const encoded = parsed.encoded;
 
-  if (!encoded) return;
+  const incomingMode = modeFromPrefix(prefix);
+  if (incomingMode) setEncodeMode(incomingMode);
 
-  if (url.pathname.startsWith("/b64/")) {
-    const intarray = Uint8Array.fromBase64(encoded, {
-      alphabet: "base64url",
-    });
+  if (prefix === "b64") {
+    const intarray = decodeBytes(encoded, "b64");
     const decoded = new TextDecoder().decode(intarray);
     setText(decoded);
-  } else if (url.pathname.startsWith("/lz/")) {
-    const compressedData = getB85Codec().decode(encoded);
+  } else if (prefix === "b85") {
+    const intarray = decodeBytes(encoded, "b85");
+    const decoded = new TextDecoder().decode(intarray);
+    setText(decoded);
+  } else if (prefix === "lz85") {
+    const compressedData = decodeBytes(encoded, "b85");
     const decompressedData = await decompressDeflate(compressedData);
     const decoded = new TextDecoder().decode(decompressedData);
     setText(decoded);
-  } else if (url.pathname.startsWith("/br/")) {
+  } else if (prefix === "lz64") {
+    const compressedData = decodeBytes(encoded, "b64");
+    const decompressedData = await decompressDeflate(compressedData);
+    const decoded = new TextDecoder().decode(decompressedData);
+    setText(decoded);
+  } else if (prefix === "br85" || prefix === "br64") {
     const { default: decompressBrotli } =
       await import("https://esm.sh/brotli/decompress.js");
-    const compressedData = getB85Codec().decode(encoded);
+    const compressedData = decodeBytes(
+      encoded,
+      prefix === "br64" ? "b64" : "b85",
+    );
     const decompressed = decompressBrotli(compressedData);
     setText(new TextDecoder().decode(decompressed));
   }

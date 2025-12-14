@@ -129,13 +129,9 @@ window.addEventListener("load", async () => {
     if (!b85Codec) {
       b85Codec = makeBase85Codec();
     }
-    const decoded = b85Codec.decodeText(encoded);
-    // const intarray = Uint8Array.fromBase64(encoded, {
-    //   alphabet: "base64url",
-    // });
-    // const decompressedData = decompressBrotli(intarray);
-    // const decoded = new TextDecoder().decode(decompressedData);
-    setText(decoded);
+    const decoded = b85Codec.decode(encoded);
+    const decompressed = decompressBrotli(decoded);
+    setText(new TextDecoder().decode(decompressed));
   }
 });
 

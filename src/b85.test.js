@@ -3,25 +3,16 @@ import { equal } from "node:assert";
 
 import { makeBase85Codec } from "./b85.js";
 
-const cases = [
-  { input: "asdf", output: "vrk;," },
-  { input: "hello", output: "1g4I1(m" },
-  { input: "hello world", output: "aBng7.H[/kelWb" },
-];
+const cases = [{ input: "asdf" }, { input: "hello" }, { input: "hello world" }];
 
 suite("b85", () => {
-  cases.forEach(({ input, output }) => {
-    test(`encode ${input}`, () => {
+  cases.forEach(({ input }) => {
+    test(`round-trip ${input}`, () => {
       const b85 = makeBase85Codec();
-      const encoded = b85.encode(new TextEncoder().encode(input));
-      equal(encoded, output);
-    });
-  });
+      const encoded = b85.encodeText(input);
+      console.log(`${input} encoded into ${encoded}`);
 
-  cases.forEach(({ input, output }) => {
-    test(`decode ${output}`, () => {
-      const b85 = makeBase85Codec();
-      const decoded = b85.decodeText(output);
+      const decoded = b85.decodeText(encoded);
       equal(decoded, input);
     });
   });

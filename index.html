@@ -2,9 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22&gt;&lt;text y=%22.9em%22 font-size=%2290%22&gt;🔡&lt;/text&gt;&lt;/svg&gt;">
+    <link
+      rel="icon"
+      href="data:image/svg+xml,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22&gt;&lt;text y=%22.9em%22 font-size=%2290%22&gt;🔡&lt;/text&gt;&lt;/svg&gt;"
+    />
+    <meta name="description" content="btoa.link - share text via URLs" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="color-scheme" content="light dark">
+    <meta name="color-scheme" content="light dark" />
     <title>btoa</title>
   </head>
   <body>
@@ -16,16 +20,26 @@
         ->
         <button id="encode-mode" aria-label="Encoding mode">Base64</button>
         ->
-        <input type="text" id="copy-link" value="" readonly>
+        <input
+          type="text"
+          id="copy-link"
+          value=""
+          readonly
+          aria-label="Generated link"
+        />
         <span id="link-length">0</span>
         <button id="copy-clipboard">Copy</button>
       </nav>
 
-      <textarea name="text" id="text"></textarea>
+      <textarea
+        name="text"
+        id="text"
+        aria-label="Main text input for encoding/decoded"
+      ></textarea>
 
       <section id="meta">
-         <button id="theme">Dark / Light</button>
-         <span id="text-length">0</span>
+        <button id="theme" aria-label="Theme">Light</button>
+        <span id="text-length">0</span>
       </section>
     </main>
 

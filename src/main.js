@@ -226,8 +226,9 @@ document.getElementById("copy-clipboard").addEventListener("click", () => {
   }
 });
 
-// When first loaded, parse URL
+// On load
 window.addEventListener("load", async () => {
+  // parse URL
   const url = new URL(window.location.href);
   const parsed = parsePrefixAndEncodedFromHref(url);
   if (!parsed) return;
@@ -269,16 +270,28 @@ window.addEventListener("load", async () => {
 
 // Color switcher
 const colorScheme = document.querySelector("meta[name=color-scheme]");
-localStorage.getItem("theme") === "dark"
-  ? (colorScheme.content = "dark")
-  : (colorScheme.content = "light");
-document.getElementById("theme").addEventListener("click", () => {
-  if (colorScheme.content === "light") {
-    colorScheme.content = "dark";
-  } else {
-    colorScheme.content = "light";
+
+/**
+ * @param {"light" | "dark"} theme
+ */
+function setTheme(theme) {
+  colorScheme.content = theme;
+  localStorage.setItem("theme", theme);
+
+  const el = document.getElementById("theme");
+  if (el instanceof HTMLButtonElement) {
+    el.textContent = theme === "dark" ? "Dark" : "Light";
   }
-  localStorage.setItem("theme", colorScheme.content);
+}
+
+const isDarkMode =
+  window.matchMedia &&
+  window.matchMedia("(prefers-color-scheme: dark)").matches;
+setTheme(localStorage.getItem("theme") || (isDarkMode ? "dark" : "light"));
+
+document.getElementById("theme").addEventListener("click", () => {
+  const theme = localStorage.getItem("theme");
+  setTheme(theme === "dark" ? "light" : "dark");
 });
 
 // Log source code repo
